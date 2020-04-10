@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+require 'dotenv/load'
 require 'selenium-webdriver'
 require 'logger'
 require 'json'
@@ -8,11 +9,12 @@ require 'fileutils'
 require 'date'
 require 'mail'
 require 'ntlm/smtp'
+require 'byebug'
 
 LOGIN_PATH = 'http://bakaratpirsum.co.il/Account/Login'
-DOWNLOAD_PATH = 'C:/Users/erank/Downloads'
-TARGET_DIR = '//athena/excel/Qv-YIifat/Yifat/tv current year/tv-'
-LOG_PATH = 'c:\Scripts\logfile.log'
+DOWNLOAD_PATH = ENV['DOWNLOAD_PATH'] || 'C:/Users/erank/Downloads'
+TARGET_DIR = ENV['TARGET_DIR'] || '//athena/excel/Qv-YIifat/Yifat/tv current year/tv-'
+LOG_PATH = ENV['LOG_PATH'] || 'c:\Scripts\logfile.log'
 
 class Tv
   def initialize(driver, logger)
@@ -50,18 +52,16 @@ class Tv
     @wait.until { @driver.find_element(id: 'userName') }
     element = @driver.find_element(id: 'userName')
     element.clear
-    element.send_keys('iritk@reshet.tv')
+    element.send_keys(ENV['LOGIN_EMAIL'])
 
     element = @driver.find_element(name: 'password')
     element.clear
-    element.send_keys('iritk')
+    element.send_keys(ENV['LOGIN_PASSWORD'])
 
-    # TODO: remove?
-    # element = @driver.find_element(id: 'btnSubmit')
     @driver.execute_script("document.getElementById('btnSubmit').click();")
 
     @wait.until { @driver.find_element(id: 'divHold') != nil }
-    @logger.info 'logged in successfully to ' + name + ' report'
+    @logger.info 'logged in successfully to'
   end
 
   def disable_popups
@@ -92,19 +92,25 @@ class Tv
 
   def from_date(d)
     @driver.execute_script("ShowDatePicker('FromDate')")
-    element = @driver.find_element(id: 'FromDate')
-    element.send_keys(d)
+    @driver.execute_script("document.getElementById('FromDate').value='#{d}'")
+    # element = @driver.find_element(id: 'FromDate')
+    # element.send_keys(d)
   end
 
   def to_date(d)
     @driver.execute_script("ShowDatePicker('ToDate')")
-    element = @driver.find_element(id: 'ToDate')
-    element.send_keys(d)
+    @driver.execute_script("document.getElementById('ToDate').value='#{d}'")
+
+    # a hack to unfocus from toDate
+    element = @driver.find_element(id: 'FromDate')
+    element.click
   end
 
   def search
-    @driver.execute_script("document.getElementById('aSearch').click();")
-    sleep(25)
+    # @driver.execute_script("document.getElementById('aSearch').click();")
+    element = @driver.find_element(id: 'aSearch')
+    element.click
+    sleep(3)
   end
 
   def copy_downloaded_report
@@ -120,13 +126,13 @@ class Tv
       # TODO: UNCOMMENT
       # currect_file = Dir.glob(DOWNLOAD_PATH + '/*').max_by { |f| File.mtime(f) }
       # FileUtils.cp_r(currect_file, TARGET_DIR + name + '.csv')
-      @logger.info 'report file created successfully for ' + name
+      @logger.info 'report file created successfully'
     end
   end
 end
 
 def create_driver
-  capabilities = Selenium::WebDriver::Remote::Capabilities.firefox(marionette: false)
+  capabilities = Selenium::WebDriver::Remote::Capabilities.firefox(marionette: true)
 
   profile = Selenium::WebDriver::Firefox::Profile.new
   profile['browser.download.folderList'] = 2
@@ -183,7 +189,7 @@ def execute
       from 'Ifat_bakara@reshet.tv'
       subject 'Failed to generate reports for TV ' + Time.now.strftime('%H:%M - %d/%m/%Y')
       body 'see details in attached log file'
-      add_file 'c:\Scripts\logfile.log'
+      add_file LOG_PATH
     end
     logger.info 'Email sent'
   end

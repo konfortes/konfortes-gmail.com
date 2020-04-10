@@ -1,0 +1,28 @@
+GEM
+  remote: https://rubygems.org/
+  specs:
+    byebug (11.1.1)
+    childprocess (0.9.0)
+      ffi (~> 1.0, >= 1.0.11)
+    dotenv (2.7.5)
+    ffi (1.12.2)
+    ruby-ntlm (0.0.4)
+    rubyzip (1.2.3)
+    selenium-webdriver (3.14.0)
+      childprocess (~> 0.5)
+      rubyzip (~> 1.2)
+
+PLATFORMS
+  ruby
+
+DEPENDENCIES
+  byebug
+  dotenv
+  ruby-ntlm
+  selenium-webdriver
+
+RUBY VERSION
+   ruby 2.4.2p198
+
+BUNDLED WITH
+   1.17.3
