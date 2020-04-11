@@ -6,7 +6,8 @@ source 'https://rubygems.org'
 
 git_source(:github) { |repo_name| "https://github.com/#{repo_name}" }
 
-gem 'ruby-ntlm'
+gem 'mail'
+gem 'rake'
 gem 'selenium-webdriver'
 
 group :development do

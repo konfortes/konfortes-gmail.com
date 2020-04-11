@@ -6,7 +6,10 @@ GEM
       ffi (~> 1.0, >= 1.0.11)
     dotenv (2.7.5)
     ffi (1.12.2)
-    ruby-ntlm (0.0.4)
+    mail (2.7.1)
+      mini_mime (>= 0.1.1)
+    mini_mime (1.0.2)
+    rake (13.0.1)
     rubyzip (1.2.3)
     selenium-webdriver (3.14.0)
       childprocess (~> 0.5)
@@ -18,7 +21,8 @@ PLATFORMS
 DEPENDENCIES
   byebug
   dotenv
-  ruby-ntlm
+  mail
+  rake
   selenium-webdriver
 
 RUBY VERSION
