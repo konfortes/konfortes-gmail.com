@@ -8,29 +8,39 @@ require 'date'
 
 module Reports
   class ReportGenerator
-    def initialize(logger, report_class, params, driver = create_driver)
+    def initialize(logger, report_class, params, driver = nil)
       @logger = logger
       @params = params
-      @driver = driver
-      @wait = Selenium::WebDriver::Wait.new(timeout: 300) # in seconds
+      @driver = driver || create_driver
+      @wait = Selenium::WebDriver::Wait.new(timeout: 10)
       @report = report_class.new(@logger, @driver, @wait)
     end
 
     def generate(start_date, end_date, name)
-      @logger.debug "start generating report #{name} from #{start_date} to #{end_date}"
+      @logger.debug "started generating report #{name}"
 
-      login
-      disable_popups
-      @driver.switch_to.default_content
-      @report.run!(start_date: start_date, end_date: end_date, name: name)
+      retry_count = 0
+      begin
+        login
+        disable_popups
+        @driver.switch_to.default_content
+        @report.run!(start_date: start_date, end_date: end_date, name: name)
 
-      if @driver.find_element(tag_name: 'body').text.include?('לא נמצאו תוצאות מתאימות להגדרת החיפוש') == true
-        @logger.info('no search results - no file is downloaded') && return
+        if @driver.find_element(tag_name: 'body').text.include?('לא נמצאו תוצאות מתאימות להגדרת החיפוש') == true
+          @logger.warn('no search results - no file is downloaded')
+          return
+        end
+
+        copy_downloaded_report(name)
+      rescue StandardError => e
+        if (retry_count += 1) >= (@parms[:retries] || 0)
+          @logger.info("failed with: #{e}. retrying...")
+          retry
+        end
+        raise
+      ensure
+        @driver.quit
       end
-
-      copy_downloaded_report(name)
-    ensure
-      @driver.quit
     end
 
     private
@@ -42,9 +52,9 @@ module Reports
       profile['browser.download.folderList'] = 2
       profile['browser.download.saveLinkAsFilenameTimeout'] = 1
       profile['browser.download.manager.showWhenStarting'] = false
-      profile['browser.download.dir'] = 'c:/temp/test'
-      profile['browser.download.downloadDir'] = 'c:/temp/test'
-      profile['browser.download.defaultFolder'] = 'c:/temp/test'
+      profile['browser.download.dir'] = @params[:download_path]
+      # profile['browser.download.downloadDir'] = @params[:download_path]
+      # profile['browser.download.defaultFolder'] = @params[:download_path]
       profile['browser.helperApps.neverAsk.saveToDisk'] = 'text/csv'
       profile['plugin.scan.plid.all'] = false
 

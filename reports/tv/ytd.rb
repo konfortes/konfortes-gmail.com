@@ -6,10 +6,11 @@ module Reports
       def initialize(logger, driver, wait = nil)
         @logger = logger
         @driver = driver
-        @wait = wait || Selenium::WebDriver::Wait.new(timeout: 300)
+        @wait = wait || Selenium::WebDriver::Wait.new(timeout: 10)
       end
 
       def run!(params = {})
+        @logger.info "started generating ytd report #{params[:name]} from #{params[:start_date]} to #{params[:end_date]}"
         navigate_to_saved_search_tv_ytd
         pick_manual_date_range
         from_date(params[:start_date])
