@@ -22,6 +22,8 @@ module Reports
 
       def navigate_to_saved_search_tv_ytd
         @wait.until { @driver.find_element(id: 'liSavedSearch') }
+        # TODO: :(
+        sleep(1)
         @driver.execute_script("ChangeTabset('liSavedSearch', '/Search/')")
         @wait.until { @driver.find_element(id: 'spnQuery_276647') }
         @driver.execute_script("document.getElementById('spnQuery_276647').click();")
@@ -30,10 +32,11 @@ module Reports
       end
 
       def pick_manual_date_range
-        # TODO: could not wait in here. must sleep
         # @wait.until { @driver.find_element(class: 'select-opener') }
+        # TODO: :(
         sleep(2)
         @driver.find_elements(class_name: 'select-opener').first.click
+        # TODO: :(
         sleep(2)
         @driver.find_elements(tag_name: 'span').select { |e| e.text == 'מותאם אישית' }.first.click
       end

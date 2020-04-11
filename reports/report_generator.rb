@@ -80,15 +80,17 @@ module Reports
 
     def copy_downloaded_report(name)
       download_path_pattern = @params[:download_path] + '/*'
-      sleep(35)
+      # TODO: :( :(
+      sleep(60)
       # @wait.until { Dir.glob(download_path_pattern).none? { |x| x.include? '.part' } }
 
       current_file = Dir.glob(download_path_pattern).max_by { |f| File.mtime(f) }
-      raise 'error downloading report' if current_file.nil?
+      raise 'error downloading report file' if current_file.nil?
 
       @logger.info "Report File successfully downloaded to #{@params[:download_path]}"
-      FileUtils.cp_r(current_file, "#{@params[:target_dir_path]}#{name}.csv")
-      @logger.info "report file successfully copied to #{@params[:target_dir_path]}"
+      target_path = "#{@params[:target_dir_path]}#{name}.csv"
+      FileUtils.cp_r(current_file, target_path)
+      @logger.info "report file successfully copied to #{target_path}"
     end
   end
 end
